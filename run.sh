@@ -19,7 +19,7 @@
 # Configure defualt application name
 APP_NAME=$1
 if [ -z "$1" ]; then
-        export APP_NAME="ECommerce";
+        export APP_NAME="ECommerce-39";
 else
         export APP_NAME=$1;
 fi
@@ -27,11 +27,6 @@ fi
 # Configure controller host/port
 CONTR_HOST=controller
 CONTR_PORT=8090
-
-# Analytics configuration parameters
-ACCOUNT_NAME=
-ACCESS_KEY=
-EVENT_ENDPOINT=
 
 # Load gen parameters
 NUM_OF_USERS=1
@@ -57,13 +52,5 @@ docker run --name msg -e jms=true -e NODE_NAME=${APP_NAME}_JMS_NODE -e CONTROLLE
 sleep 30
 
 docker run --name=load-gen -e NUM_OF_USERS=1 -e TIME_BETWEEN_RUNS=30000 --link lbr:lbr -d appdynamics/ecommerce-load
-#docker run --name dbagent -e CONTROLLER=${CONTR_HOST} -e APPD_PORT=${CONTR_PORT} --link db:db --link oracle-db:oracle-db --link controller:controller -d appdynamics/ecommerce-dbagent
-
-# Configuring Analytics...
-echo "Configuring Analytics..."
-docker exec -i web bash -c '/configAnalytics.sh'
-echo
-docker exec -i web1 bash -c '/configAnalytics.sh'
-echo "Analytics configured successfully"
 
 exit 0
