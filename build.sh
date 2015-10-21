@@ -16,7 +16,7 @@
 
 #! /bin/bash
 
-# Version-independent agent names used by Dockerfiles 
+# Version-independent agent names used by Dockerfiles
 ZIP_MACHINE_AGENT=MachineAgent.zip
 RPM_MACHINE_AGENT=machineagent.rpm
 WEB_SERVER_AGENT=webserver_agent.tar.gz
@@ -27,7 +27,7 @@ JS_AGENT=adrum.js
 ADRUM_ZIP=adrum.zip
 
 cleanUp() {
-  if [ -z ${PREPARE_ONLY} ]; then 
+  if [ -z ${PREPARE_ONLY} ]; then
     # Delete JDK from docker buid dir
     (cd ECommerce-Java && rm -f jdk-linux-x64.rpm)
 
@@ -41,7 +41,6 @@ cleanUp() {
     (cd ECommerce-FaultInjection && rm -rf ECommerce-FaultInjectionUI)
     (cd ECommerce-SurveyClient && rm -f AppServerAgent.zip ${MACHINE_AGENT})
     (cd ECommerce-SurveyClient && rm -rf monitors ECommerce-Java)
-    (cd ECommerce-Dbwrapper && rm -rf AppServerAgent.zip ${MACHINE_AGENT} docker-dbwrapper)
 
     # Delete cloned repos from docker build dirs
     (cd ECommerce-Tomcat && rm -rf ECommerce-Java)
@@ -75,12 +74,12 @@ promptForAgents() {
 
 # Copy Agent zips to build dirs
 copyAgents() {
-  echo "Adding AppDynamics Agents: 
-    ${APP_SERVER_AGENT_INPUT} 
-    ${WEB_AGENT_INPUT} 
+  echo "Adding AppDynamics Agents:
+    ${APP_SERVER_AGENT_INPUT}
+    ${WEB_AGENT_INPUT}
     ${DB_AGENT_INPUT}
     ${MACHINE_AGENT_INPUT}
-    ${ADRUM_AGENT_INPUT}" 
+    ${ADRUM_AGENT_INPUT}"
 
   cp -f ${APP_SERVER_AGENT_INPUT} ECommerce-Tomcat/${APP_SERVER_AGENT}
   cp -f ${MACHINE_AGENT_INPUT} ECommerce-Tomcat/${MACHINE_AGENT}
@@ -110,26 +109,21 @@ copyAgents() {
   cp -f ${APP_SERVER_AGENT_INPUT} ECommerce-SurveyClient/AppServerAgent.zip
   cp -f ${MACHINE_AGENT_INPUT} ECommerce-SurveyClient/${MACHINE_AGENT}
   echo "Copied Agents for ECommerce-SurveyClient"
-
-  cp -f ${MACHINE_AGENT_INPUT} ECommerce-Dbwrapper/${MACHINE_AGENT}
-  cp -f ${APP_SERVER_AGENT_INPUT} ECommerce-Dbwrapper/AppServerAgent.zip
-  echo "Copied Agents for ECommerce-Dbwrapper"
 }
 
 # Clone ECommerce source projects into docker build dirs
 cloneProjects() {
-  (cd ECommerce-Tomcat && rm -rf ECommerce-Java && git clone https://github.com/Appdynamics/ECommerce-Java.git)
-  (cd ECommerce-FulfillmentClient && rm -rf ECommerce-Java && git clone https://github.com/Appdynamics/ECommerce-Java.git)
+  (cd ECommerce-Tomcat && rm -rf ECommerce-Java && git clone -b 4.1-demo https://github.com/Appdynamics/ECommerce-Java.git)
+  (cd ECommerce-FulfillmentClient && rm -rf ECommerce-Java && git clone -b 4.1-demo https://github.com/Appdynamics/ECommerce-Java.git)
   (cd ECommerce-Angular && rm -rf ECommerce-Angular && git clone https://github.com/Appdynamics/ECommerce-Angular.git)
   (cd ECommerce-Load && rm -rf ECommerce-Load && git clone https://github.com/Appdynamics/ECommerce-Load.git)
-  (cd ECommerce-SurveyClient && git clone https://github.com/Appdynamics/ECommerce-Java.git)
+  (cd ECommerce-SurveyClient && git clone -b 4.1-demo https://github.com/Appdynamics/ECommerce-Java.git)
   (cd ECommerce-FaultInjection && git clone https://github.com/Appdynamics/ECommerce-FaultInjectionUI.git)
-  (cd ECommerce-Dbwrapper && git clone https://github.com/AppDynamics/docker-dbwrapper.git)
 }
 
 # Build Docker containers
 buildContainers() {
-  echo; echo "Building ECommerce-Tomcat..." 
+  echo; echo "Building ECommerce-Tomcat..."
   (cd ECommerce-Tomcat && docker build -t appdynamics/ecommerce-tomcat .)
 
   echo; echo "Building ECommerce-FulfillmentClient..."
@@ -155,9 +149,6 @@ buildContainers() {
 
   echo; echo "Building ECommerce-FaultInjection..."
   (cd ECommerce-FaultInjection && docker build -t appdynamics/ecommerce-faultinjection .)
-
-  echo rds-dbwrapper; echo "Build ECommerce-Dbwrapper..."
-  (cd ECommerce-Dbwrapper && docker build -t appdynamics/ecommerce-dbwrapper .)
 }
 
 # Usage information
@@ -215,9 +206,9 @@ else
         fi
         ;;
       y)
-        ANALYTICS_AGENT_INPUT=$OPTARG 
+        ANALYTICS_AGENT_INPUT=$OPTARG
 	if [ ! -e ${ANALYTICS_AGENT_INPUT} ]; then
-          echo "Not found: ${ANALYTICS_AGENT_INPUT}"; exit         
+          echo "Not found: ${ANALYTICS_AGENT_INPUT}"; exit
         fi
         ;;
       j)
@@ -225,7 +216,7 @@ else
         if [ ! -e ${ORACLE_JDK7} ]; then
           echo "Not found: ${ORACLE_JDK7}"; exit
         fi
-        ;; 
+        ;;
       p)
         echo "Prepare build environment only - no docker builds"
         PREPARE_ONLY=true;
@@ -282,7 +273,7 @@ else
     echo "Using standalone Analytics Agent"
     echo "  ${ANALYTICS_AGENT_INPUT}"
     cp -f ${ANALYTICS_AGENT_INPUT} ECommerce-Tomcat/${ANALYTICS_AGENT}
-    
+
     # Add analytics agent when creating Dockerfile for machine agent
     DOCKERFILE_OPTIONS="analytics"
 fi
@@ -291,7 +282,7 @@ if [ ${MACHINE_AGENT_INPUT: -4} == ".zip" ]
 then
     source ./makeDockerfiles.sh zip ${DOCKERFILE_OPTIONS}
     cp -f ${MACHINE_AGENT_INPUT} MachineAgent.zip
-    MACHINE_AGENT="MachineAgent.zip"        
+    MACHINE_AGENT="MachineAgent.zip"
 elif [ ${MACHINE_AGENT_INPUT: -4} == ".rpm" ]
 then
     source ./makeDockerfiles.sh rpm ${DOCKERFILE_OPTIONS}
@@ -312,4 +303,3 @@ if [ "${PREPARE_ONLY}" = true ] ; then
 else
     buildContainers
 fi
-
