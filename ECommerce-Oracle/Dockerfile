@@ -19,6 +19,7 @@ RUN alien --scripts -d /oracle-xe-11.2.0-1.0.x86_64.rpm
 ADD chkconfig /sbin/chkconfig
 ADD init.ora /
 ADD initXETemp.ora /
+ADD data /root/
 
 RUN apt-get install -y libaio1 net-tools bc
 RUN ln -s /usr/bin/awk /bin/awk
@@ -42,4 +43,5 @@ EXPOSE 8080
 
 CMD sed -i -E "s/HOST = [^)]+/HOST = $HOSTNAME/g" /u01/app/oracle/product/11.2.0/xe/network/admin/listener.ora; \
 	service oracle-xe start; \
+    sleep 10 && /bin/bash /root/load.sh; \
 	/usr/sbin/sshd -D
