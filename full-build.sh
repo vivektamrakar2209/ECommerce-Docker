@@ -25,6 +25,7 @@ ANALYTICS_AGENT=AnalyticsAgent.zip
 DB_AGENT=dbagent.zip
 JS_AGENT=adrum.js
 ADRUM_ZIP=adrum.zip
+UA_ZIP=UA.zip
 
 cleanUp() {
   if [ -z ${PREPARE_ONLY} ]; then 
@@ -32,16 +33,16 @@ cleanUp() {
     (cd ECommerce-Java && rm -f jdk-linux-x64.rpm)
 
     # Delete agent distros from docker build dirs
-    (cd ECommerce-Tomcat && rm -f ${APP_SERVER_AGENT} ${ZIP_MACHINE_AGENT} ${RPM_MACHINE_AGENT} ${ANALYTICS_AGENT})
-    (cd ECommerce-FulfillmentClient && rm -f ${APP_SERVER_AGENT} ${ZIP_MACHINE_AGENT} ${RPM_MACHINE_AGENT})
-    (cd ECommerce-Synapse && rm -f ${APP_SERVER_AGENT} ${ZIP_MACHINE_AGENT} ${RPM_MACHINE_AGENT})
-    (cd ECommerce-LBR && rm -f ${ZIP_MACHINE_AGENT} ${RPM_MACHINE_AGENT} ${WEB_SERVER_AGENT} ${JS_AGENT})
+    (cd ECommerce-Tomcat && rm -f ${APP_SERVER_AGENT} ${ZIP_MACHINE_AGENT} ${RPM_MACHINE_AGENT} ${ANALYTICS_AGENT} ${UA_ZIP})
+    (cd ECommerce-FulfillmentClient && rm -f ${APP_SERVER_AGENT} ${ZIP_MACHINE_AGENT} ${RPM_MACHINE_AGENT} ${UA_ZIP})
+    (cd ECommerce-Synapse && rm -f ${APP_SERVER_AGENT} ${ZIP_MACHINE_AGENT} ${RPM_MACHINE_AGENT} ${UA_ZIP})
+    (cd ECommerce-LBR && rm -f ${ZIP_MACHINE_AGENT} ${RPM_MACHINE_AGENT} ${WEB_SERVER_AGENT} ${JS_AGENT} ${UA_ZIP})
     (cd ECommerce-DBAgent && rm -f ${DB_AGENT})
     (cd ECommerce-Angular && rm -f ${JS_AGENT})
     (cd ECommerce-FaultInjection && rm -rf ECommerce-FaultInjectionUI)
-    (cd ECommerce-SurveyClient && rm -f AppServerAgent.zip ${MACHINE_AGENT})
+    (cd ECommerce-SurveyClient && rm -f AppServerAgent.zip ${MACHINE_AGENT} ${UA_ZIP})
     (cd ECommerce-SurveyClient && rm -rf monitors ECommerce-Java)
-    (cd ECommerce-AddressService && rm -rf AppServerAgent.zip ${MACHINE_AGENT} docker-dbwrapper)
+    (cd ECommerce-AddressService && rm -rf AppServerAgent.zip ${MACHINE_AGENT} docker-dbwrapper ${UA_ZIP})
 
     # Delete cloned repos from docker build dirs
     (cd ECommerce-Tomcat && rm -rf ECommerce-Java)
@@ -66,11 +67,13 @@ trap cleanUp EXIT
 promptForAgents() {
   read -e -p "Enter path to App Server Agent: " APP_SERVER_AGENT_INPUT
   read -e -p "Enter path to Machine Agent: " MACHINE_AGENT_INPUT
+  read -e -p "Enter path to Unified Agent: " UA_ZIP_INPUT
   read -e -p "Enter path to DB Agent: " DB_AGENT_INPUT
   read -e -p "Enter path to Web Server Agent: " WEB_AGENT_INPUT
   read -e -p "Enter path to Javascript Agent: " ADRUM_AGENT_INPUT
   read -e -p "Enter path to Analytics Agent: " ANALYTICS_AGENT_INPUT
   read -e -p "Enter path to Oracle JDK7: " ORACLE_JDK7
+  read -e -p "Enter path to Unified Agent: " UA_ZIP_INPUT
 }
 
 # Copy Agent zips to build dirs
@@ -80,17 +83,20 @@ copyAgents() {
     ${WEB_AGENT_INPUT} 
     ${DB_AGENT_INPUT}
     ${MACHINE_AGENT_INPUT}
-    ${ADRUM_AGENT_INPUT}" 
-
+    ${ADRUM_AGENT_INPUT} 
+    ${UA_ZIP_INPUT}"
   cp -f ${APP_SERVER_AGENT_INPUT} ECommerce-Tomcat/${APP_SERVER_AGENT}
+  cp -f ${UA_ZIP_INPUT} ECommerce-Tomcat/${UA_ZIP}
   cp -f ${MACHINE_AGENT_INPUT} ECommerce-Tomcat/${MACHINE_AGENT}
   echo "Copied Agents for ECommerce-Tomcat"
 
   cp -f ${APP_SERVER_AGENT_INPUT} ECommerce-FulfillmentClient/${APP_SERVER_AGENT}
+  cp -f ${UA_ZIP_INPUT} ECommerce-FulfillmentClient/${UA_ZIP}
   cp -f ${MACHINE_AGENT_INPUT} ECommerce-FulfillmentClient/${MACHINE_AGENT}
   echo "Copied Agents for ECommerce-FulfillmentClient"
 
   cp -f ${APP_SERVER_AGENT_INPUT} ECommerce-Synapse/${APP_SERVER_AGENT}
+  cp -f ${UA_ZIP_INPUT} ECommerce-Synapse/${UA_ZIP}
   cp -f ${MACHINE_AGENT_INPUT} ECommerce-Synapse/${MACHINE_AGENT}
   echo "Copied Agents for ECommerce-Synapse"
 
@@ -108,11 +114,13 @@ copyAgents() {
   echo "Copied Agents for ECommerce-Angular"
 
   cp -f ${APP_SERVER_AGENT_INPUT} ECommerce-SurveyClient/AppServerAgent.zip
+  cp -f ${UA_ZIP_INPUT} ECommerce-SurveyClient/${UA_ZIP}
   cp -f ${MACHINE_AGENT_INPUT} ECommerce-SurveyClient/${MACHINE_AGENT}
   echo "Copied Agents for ECommerce-SurveyClient"
 
   cp -f ${MACHINE_AGENT_INPUT} ECommerce-AddressService/${MACHINE_AGENT}
   cp -f ${APP_SERVER_AGENT_INPUT} ECommerce-AddressService/AppServerAgent.zip
+  cp -f ${UA_ZIP_INPUT} ECommerce-AddressService/${UA_ZIP}
   echo "Copied Agents for ECommerce-AddressService"
 }
 
@@ -166,6 +174,7 @@ then
   echo "Specify agent locations: build.sh
           -a <Path to App Server Agent>
           -m <Path to Machine Agent>
+          -u <Path to Unified Agent>
           -d <Path to Database Agent>
           -w <Path to Web Server Agent>
           -r <Path to JavaScript Agent>
@@ -182,7 +191,7 @@ then
 
 else
   # Allow user to specify locations of App Server, Machine and Database Agents
-  while getopts "a:m:d:w:r:y:j:prepare" opt; do
+  while getopts "a:m:u:d:w:r:y:j:prepare" opt; do
     case $opt in
       a)
         APP_SERVER_AGENT_INPUT=$OPTARG
@@ -196,6 +205,12 @@ else
           echo "Not found: ${MACHINE_AGENT_INPUT}"; exit 1
         fi
         ;;
+      u)
+        export UA_ZIP_INPUT=$OPTARG
+        if [ ! -e ${UA_ZIP_INPUT} ]; then
+          echo "Not found: ${UA_ZIP_INPUT}"; exit 1
+        fi
+        ;;        
       d)
         DB_AGENT_INPUT=$OPTARG
         if [ ! -e ${DB_AGENT_INPUT} ]; then
@@ -243,6 +258,9 @@ fi
 
 if [ -z ${MACHINE_AGENT_INPUT} ]; then
     echo "Error: Machine Agent is required"; exit 1
+fi
+if [ -z ${UA_ZIP_INPUT} ]; then
+    echo "Error: Unified Agent is required"; exit 1
 fi
 
 if [ -z ${DB_AGENT_INPUT} ]; then

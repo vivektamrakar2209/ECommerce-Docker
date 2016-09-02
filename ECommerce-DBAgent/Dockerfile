@@ -1,4 +1,4 @@
-FROM appdynamics/ecommerce-java:openssh
+FROM appdynamics/ecommerce-java:oracle-java7
 
 # set timezone to UTC
 RUN mv /etc/localtime /etc/localtime.bak
@@ -8,6 +8,7 @@ RUN ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime
 ENV AGENT_HOME /dbagent
 ADD dbagent.zip /
 RUN unzip -q /dbagent.zip -d ${AGENT_HOME}
+RUN yum -y install openssh-server openssh-clients
 RUN rm dbagent.zip
 ADD controller-info.xml /
 

@@ -69,13 +69,14 @@ export VERSION_STRING="_VERSION_STRING"
 
 export JAVA_OPTS="-Xmx512m -XX:MaxPermSize=256m"
 export JMX_OPTS="-Dcom.sun.management.jmxremote.port=8888  -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
-
 # Uncomment these lines to use system proeprties to override controller-info.xml settings
 export APPD_CONTROLLER_OPTS="-Dappdynamics.controller.hostName=${CONTROLLER} -Dappdynamics.controller.port=${APPD_PORT}"
 export APPD_APPLICATION_OPTS="-Dappdynamics.agent.applicationName=${APP_NAME} -Dappdynamics.agent.tierName=${TIER_NAME} -Dappdynamics.agent.nodeName=${NODE_NAME}"
 export APPD_ACCOUNT_OPTS="-Dappdynamics.agent.accountName=${ACCOUNT_NAME%%_*} -Dappdynamics.agent.accountAccessKey=${ACCESS_KEY}"
 #export APPD_HOSTID_OPTS="-DuniqueHostId=${HOSTNAME}"
 export APPD_SIM_OPTS="-Dappdynamics.sim.enabled=true"
+export UA_HOME="/ua"
+export UA_CONFIG=${UA_HOME}/conf/unifiedagent.yaml
 
 export MACHINE_AGENT_JAVA_OPTS="${JAVA_OPTS} ${APPD_CONTROLLER_OPTS} ${APPD_ACCOUNT_OPTS} ${APPD_HOSTID_OPTS} ${APPD_SIM_OPTS}"
 export APP_AGENT_JAVA_OPTS="${JAVA_OPTS} ${APPD_CONTROLLER_OPTS} ${APPD_ACCOUNT_OPTS} ${APPD_APPLICATION_OPTS} ${APPD_HOSTID_OPTS} -DjvmRoute=${JVM_ROUTE} -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager";

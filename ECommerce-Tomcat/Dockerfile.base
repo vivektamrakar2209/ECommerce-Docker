@@ -21,6 +21,7 @@ RUN cd /ECommerce-Java;gradle war uberJar;
 ENV TOMCAT_MAJOR_VERSION 8
 ENV TOMCAT_MINOR_VERSION 8.0.14
 ENV CATALINA_HOME /tomcat
+ENV UA_HOME /ua
 
 # Environment settings for startup scripts
 ADD env.sh /
@@ -38,6 +39,10 @@ RUN cd ${CATALINA_HOME}/bin;chmod +x *.sh
 # App Server Agent Install
 ADD AppServerAgent.zip /
 RUN unzip -q /AppServerAgent.zip -d ${CATALINA_HOME}/appagent;rm AppServerAgent.zip
+
+# Unified Server Agent Install
+ADD UA.zip /
+RUN unzip -q /UA.zip -d ${UA_HOME};rm /UA.zip
 
 # (Placeholder - build script will update with zip/rpm directives)
 # Machine Agent Install
@@ -60,9 +65,11 @@ RUN version=`find ${CATALINA_HOME}/appagent -maxdepth 1 -type d -name "ver*" | s
     sed -e "s:_VERSION_STRING:$version:g" env.sh > env.sh.tmp && mv env.sh.tmp env.sh
 ADD start-machine-agent.sh /
 ADD start-appserver-agent.sh /
+ADD start-ua.sh /
 ADD app-agent-config-dbcam.xml /
 
 RUN chmod +x /startup.sh
+RUN chmod +x /start-ua.sh
 RUN chmod +x /start-machine-agent.sh
 RUN chmod +x /start-appserver-agent.sh
 RUN chmod +x /configAnalytics.sh
